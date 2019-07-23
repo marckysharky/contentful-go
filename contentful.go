@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"net/url"
+	"path"
 	"strconv"
 	"time"
 
@@ -23,6 +24,7 @@ type Contentful struct {
 	QueryParams map[string]string
 	Headers     map[string]string
 	BaseURL     string
+	Env         string
 
 	Spaces       *SpacesService
 	APIKeys      *APIKeyService
@@ -50,6 +52,7 @@ func NewCMA(token string) *Contentful {
 			"X-Contentful-User-Agent": fmt.Sprintf("sdk contentful.go/%s", Version),
 		},
 		BaseURL: "https://api.contentful.com",
+		Env:     "master",
 	}
 
 	c.Spaces = &SpacesService{c: c}
@@ -123,6 +126,10 @@ func (c *Contentful) SetOrganization(organizationID string) *Contentful {
 // SetHTTPClient sets the underlying http.Client used to make requests.
 func (c *Contentful) SetHTTPClient(client *http.Client) {
 	c.client = client
+}
+
+func (c *Contentful) newPath(spaceID string, rest string) string {
+	return path.Join(fmt.Sprintf("/spaces/%s", spaceID), fmt.Sprintf("/environments/%s", c.Env), rest)
 }
 
 func (c *Contentful) newRequest(method, path string, query url.Values, body io.Reader) (*http.Request, error) {
